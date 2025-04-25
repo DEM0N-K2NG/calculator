@@ -1,24 +1,62 @@
 <!DOCTYPE html>
-<html>
+<html lang="bn">
 <head>
+  <meta charset="UTF-8">
   <title>টাকা ক্যালকুলেটর</title>
 </head>
 <body>
   <h2>শুক্রবার বাদ দিয়ে টাকা ক্যালকুলেটর</h2>
-  <label>মোট দিন: <input type="number" id="totalDays" value="30"></label><br><br>
-  <label>শুক্রবারের সংখ্যা: <input type="number" id="fridays" value="4"></label><br><br>
+
+  <label>মাস নির্বাচন করুন:
+    <select id="month">
+      <option value="0">January</option>
+      <option value="1">February</option>
+      <option value="2">March</option>
+      <option value="3">April</option>
+      <option value="4">May</option>
+      <option value="5">June</option>
+      <option value="6">July</option>
+      <option value="7">August</option>
+      <option value="8">September</option>
+      <option value="9">October</option>
+      <option value="10">November</option>
+      <option value="11">December</option>
+    </select>
+  </label><br><br>
+
+  <label>বছর: <input type="number" id="year" value="2025"></label><br><br>
   <label>প্রতি দিনের আয় (টাকা): <input type="number" id="dailyIncome" value="300"></label><br><br>
+
   <button onclick="calculate()">হিসাব করো</button>
   <h3 id="result"></h3>
 
   <script>
+    function countFridays(month, year) {
+      let date = new Date(year, month, 1);
+      let fridays = 0;
+      while (date.getMonth() === month) {
+        if (date.getDay() === 5) { // 5 means Friday
+          fridays++;
+        }
+        date.setDate(date.getDate() + 1);
+      }
+      return fridays;
+    }
+
     function calculate() {
-      let totalDays = parseInt(document.getElementById("totalDays").value);
-      let fridays = parseInt(document.getElementById("fridays").value);
+      let month = parseInt(document.getElementById("month").value);
+      let year = parseInt(document.getElementById("year").value);
       let dailyIncome = parseInt(document.getElementById("dailyIncome").value);
-      let workingDays = totalDays - fridays;
+
+      let daysInMonth = new Date(year, month + 1, 0).getDate();
+      let fridays = countFridays(month, year);
+      let workingDays = daysInMonth - fridays;
       let total = workingDays * dailyIncome;
-      document.getElementById("result").innerText = "মোট আয়: " + total + " টাকা";
+
+      document.getElementById("result").innerText =
+        "মাসে মোট শুক্রবার: " + fridays + " দিন\n" +
+        "কাজের দিন: " + workingDays + " দিন\n" +
+        "মোট আয়: " + total + " টাকা";
     }
   </script>
 </body>
