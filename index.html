@@ -5,7 +5,7 @@
   <title>YouTube Downloader</title>
   <style>
     body {
-      font-family: Arial;
+      font-family: Arial, sans-serif;
       padding: 30px;
       background: #f5f5f5;
       max-width: 600px;
@@ -26,7 +26,7 @@
   </style>
 </head>
 <body>
-  <h2>YouTube Downloader</h2>
+  <h2>YouTube Video Downloader</h2>
 
   <input type="text" id="url" placeholder="Enter YouTube Video URL" />
   <button onclick="fetchVideoInfo()">Get Video Info</button>
@@ -48,6 +48,11 @@
   <script>
     async function fetchVideoInfo() {
       const url = document.getElementById("url").value;
+      if (!url) {
+        alert("Please enter a valid YouTube URL");
+        return;
+      }
+
       const res = await fetch("http://localhost:5000/video_info", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
