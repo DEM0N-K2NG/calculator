@@ -5,54 +5,94 @@
   <title>YouTube Downloader</title>
   <style>
     body {
-      font-family: sans-serif;
+      font-family: Arial;
       padding: 30px;
       background: #f5f5f5;
+      max-width: 600px;
+      margin: auto;
     }
     input, select, button {
       padding: 10px;
       margin: 10px 0;
       width: 100%;
     }
+    .info-box {
+      background: #fff;
+      padding: 15px;
+      border-radius: 5px;
+      margin-top: 10px;
+      box-shadow: 0 0 5px rgba(0,0,0,0.1);
+    }
   </style>
 </head>
 <body>
-  <h2>YouTube Video Downloader</h2>
-  <input type="text" id="url" placeholder="Enter YouTube Video URL" />
-  <button onclick="getFormats()">Get Video Formats</button>
+  <h2>YouTube Downloader</h2>
 
-  <div id="formatDiv" style="display:none;">
-    <select id="qualitySelect"></select>
-    <button onclick="download()">Download</button>
-  </div>
+  <input type="text" id="url" placeholder="Enter YouTube Video URL" />
+  <button onclick="fetchVideoInfo()">Get Video Info</button>
+
+  <div id="videoInfo" class="info-box" style="display:none;"></div>
+
+  <select id="resolution">
+    <option value="">Select Resolution</option>
+    <option value="144p">144p</option>
+    <option value="240p">240p</option>
+    <option value="360p">360p</option>
+    <option value="480p">480p</option>
+    <option value="720p">720p</option>
+    <option value="1080p">1080p</option>
+  </select>
+
+  <button onclick="downloadVideo()">Download</button>
 
   <script>
-    async function getFormats() {
+    async function fetchVideoInfo() {
       const url = document.getElementById("url").value;
-      const res = await fetch("http://localhost:3000/formats", {
+      const res = await fetch("http://localhost:5000/video_info", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
       });
 
       const data = await res.json();
-      const select = document.getElementById("qualitySelect");
-      select.innerHTML = "";
 
-      data.formats.forEach(f => {
-        const opt = document.createElement("option");
-        opt.value = f.itag;
-        opt.text = `${f.qualityLabel} - ${f.container}`;
-        select.appendChild(opt);
-      });
+      if (data.error) {
+        alert(data.error);
+        return;
+      }
 
-      document.getElementById("formatDiv").style.display = "block";
+      document.getElementById("videoInfo").style.display = "block";
+      document.getElementById("videoInfo").innerHTML = `
+        <strong>Title:</strong> ${data.title}<br/>
+        <strong>Author:</strong> ${data.author}<br/>
+        <strong>Length:</strong> ${data.length} sec<br/>
+        <strong>Views:</strong> ${data.views.toLocaleString()}<br/>
+        <strong>Published:</strong> ${data.publish_date}<br/>
+        <p>${data.description.slice(0, 150)}...</p>
+      `;
     }
 
-    function download() {
+    async function downloadVideo() {
       const url = document.getElementById("url").value;
-      const itag = document.getElementById("qualitySelect").value;
-      window.location.href = `http://localhost:3000/download?url=${encodeURIComponent(url)}&itag=${itag}`;
+      const resolution = document.getElementById("resolution").value;
+
+      if (!resolution) {
+        alert("Please select a resolution");
+        return;
+      }
+
+      const res = await fetch(`http://localhost:5000/download/${resolution}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
+
+      const data = await res.json();
+      if (data.message) {
+        alert(data.message);
+      } else {
+        alert("Error: " + data.error);
+      }
     }
   </script>
 </body>
