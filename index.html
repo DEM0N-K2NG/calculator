@@ -2,67 +2,57 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>YouTube Downloader</title>
   <style>
     body {
-      font-family: Arial;
-      background-color: #f3f3f3;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-    }
-    .container {
-      background: white;
+      font-family: sans-serif;
       padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-      text-align: center;
-      width: 90%;
-      max-width: 400px;
+      background: #f5f5f5;
     }
-    input {
-      width: 100%;
+    input, select, button {
       padding: 10px;
-      margin: 15px 0;
-    }
-    button {
-      padding: 10px 20px;
-      background: crimson;
-      color: white;
-      border: none;
-      cursor: pointer;
-      border-radius: 5px;
-    }
-    #result {
-      margin-top: 20px;
+      margin: 10px 0;
+      width: 100%;
     }
   </style>
 </head>
 <body>
-  <div class="container">
-    <h2>YouTube Video Downloader</h2>
-    <input type="text" id="url" placeholder="Enter YouTube video URL" />
-    <button onclick="downloadVideo()">Download</button>
-    <div id="result"></div>
+  <h2>YouTube Video Downloader</h2>
+  <input type="text" id="url" placeholder="Enter YouTube Video URL" />
+  <button onclick="getFormats()">Get Video Formats</button>
+
+  <div id="formatDiv" style="display:none;">
+    <select id="qualitySelect"></select>
+    <button onclick="download()">Download</button>
   </div>
 
   <script>
-    function downloadVideo() {
-      const url = document.getElementById('url').value;
-      if (!url) {
-        alert('Please enter a URL');
-        return;
-      }
+    async function getFormats() {
+      const url = document.getElementById("url").value;
+      const res = await fetch("http://localhost:3000/formats", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ url }),
+      });
 
-      // Dummy link — replace with a real API call in production
-      const downloadLink = `https://www.y2mate.com/youtube/${encodeURIComponent(url)}`;
+      const data = await res.json();
+      const select = document.getElementById("qualitySelect");
+      select.innerHTML = "";
 
-      document.getElementById('result').innerHTML = `
-        <p>Click below to download:</p>
-        <a href="${downloadLink}" target="_blank">Download Now</a>
-      `;
+      data.formats.forEach(f => {
+        const opt = document.createElement("option");
+        opt.value = f.itag;
+        opt.text = `${f.qualityLabel} - ${f.container}`;
+        select.appendChild(opt);
+      });
+
+      document.getElementById("formatDiv").style.display = "block";
+    }
+
+    function download() {
+      const url = document.getElementById("url").value;
+      const itag = document.getElementById("qualitySelect").value;
+      window.location.href = `http://localhost:3000/download?url=${encodeURIComponent(url)}&itag=${itag}`;
     }
   </script>
 </body>
